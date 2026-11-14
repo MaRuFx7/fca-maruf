@@ -1,0 +1,12 @@
+{
+  "name": "fca-maruf",
+  "version": "1.0.0",
+  "description": "A modular, adapter-based messaging client framework by MaRuF.",
+  "main": "index.js",
+  "type": "commonjs",
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test", "test:watch": "node --test --watch" },
+  "keywords": ["messaging", "bot-framework", "adapter", "maruf"],
+  "license": "MIT",
+  "files": ["index.js", "lib/", "adapters/", "README.md", "LICENSE"]
+}
