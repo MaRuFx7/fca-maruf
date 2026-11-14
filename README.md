@@ -31,9 +31,11 @@ login({ appState }, optionsFca, (error, api) => {
 });
 ```
 
-The compatibility entry point forwards the credentials, options, callback, and returned API to the configured FCA transport (`@eryxenx/fca`). This means login, appState processing, MQTT, and Facebook API method behavior are provided by that transport dependency—not reimplemented or simulated by this wrapper. `api.listenMqtt`, `api.stopListening`, `sendMessage`, and other methods are passed through unchanged.
+The compatibility entry point forwards credentials, options, and login to the configured FCA transport. Login, appState processing, MQTT, and Facebook API method behavior are provided by that transport—not independently implemented by this wrapper.
 
-**Important:** This is an integration bridge toward GoatBot compatibility, not yet an independently implemented Facebook transport. Verify the upstream dependency and its current behavior before production use. Never commit `appState`, cookies, passwords, or tokens to GitHub.
+For transports where `listenMqtt()` returns a stop function instead of exposing `api.stopListening()`, the compatibility layer supplies `api.stopListening(callback)` by delegating to the returned stop function. An existing transport-provided `stopListening` method is left unchanged.
+
+**Important:** This is an integration bridge, not yet an independently implemented Facebook transport. Verify the upstream dependency and its current behavior before production use. Never commit `appState`, cookies, passwords, or tokens to GitHub.
 
 ## Framework API
 
@@ -62,7 +64,7 @@ npm install
 npm test
 ```
 
-CI tests Node.js 20, 22, and 24. See [docs/GOATBOT_COMPATIBILITY.md](docs/GOATBOT_COMPATIBILITY.md) for the Prime API audit and remaining compatibility work.
+CI tests Node.js 20, 22, and 24. See [docs/GOATBOT_COMPATIBILITY.md](docs/GOATBOT_COMPATIBILITY.md) for the Prime API audit, the Tinkprocodes reference review, and remaining compatibility work.
 
 ## License
 
