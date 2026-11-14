@@ -58,6 +58,10 @@ node examples/basic.js
 ```
 GitHub Actions runs tests on Node.js 20, 22, and 24 for pushes, pull requests, and manual runs.
 
+## GoatBot compatibility audit
+
+The initial API audit for `MaRuFx7/Prime` is documented in [docs/GOATBOT_COMPATIBILITY.md](docs/GOATBOT_COMPATIBILITY.md). It records the observed login/listener contract, API methods, and event fields. This is an implementation target, not a compatibility claim.
+
 ## Current status
 - [x] CommonJS package foundation
 - [x] Adapter contract and mock transport
