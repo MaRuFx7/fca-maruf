@@ -85,15 +85,15 @@ test('adds api.stopListening compatibility for transports returning a stop funct
   assert.equal(stopError, null);
 });
 
-test('reports when stopListening is called without an active listener', () => {
+test('stopListening is safe when no listener is active', () => {
   const api = { listenMqtt() { return () => {}; } };
   const login = createLogin(() => (credentials, options, callback) => callback(null, api));
 
   login({ appState: [] }, (error, returnedApi) => {
     assert.ifError(error);
-    returnedApi.stopListening(stopError => {
-      assert.match(stopError.message, /No active MQTT listener/);
-    });
+    let stopError = 'not-called';
+    returnedApi.stopListening(error => { stopError = error; });
+    assert.equal(stopError, null);
   });
 });
 
