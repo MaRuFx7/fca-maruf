@@ -2,76 +2,72 @@
 
 **MaRuF FCA — version 1.0.0**
 
-A modular, adapter-based messaging client framework for Node.js 20+. This repository starts with a stable core API and a mock adapter so developers can build and test integrations without embedding account credentials or depending on undocumented endpoints.
+A modular, adapter-based messaging client framework for Node.js 20+. It provides a transport-neutral client, adapter contract, local rate limiter, and mock adapter for development and automated testing.
 
-> **Important:** Version 1.0.0 is the framework foundation, not a drop-in Facebook Chat API implementation. No Facebook login, cookie import, scraping, or undocumented network transport is included. Add only integrations you are authorized to use and that comply with the relevant platform terms.
+> **Scope:** This release is a framework foundation, not a drop-in Facebook Chat API implementation. It does not include Facebook login, cookie import, scraping, private endpoint automation, or undocumented network transport. Integrations must use authorized interfaces and comply with platform terms.
 
 ## Requirements
-
 - Node.js 20+
 - CommonJS
 
 ## Install
-
 ```bash
 npm install fca-maruf
 ```
 
 ## Quick start
-
 ```js
 const fca = require('fca-maruf');
-
-const api = fca.createClient({
-  adapter: new fca.MockAdapter()
-});
+const api = fca.createClient({ adapter: new fca.MockAdapter() });
 
 api.on('connected', () => console.log('Connected'));
 api.on('messageSent', ({ result }) => console.log(result));
+api.on('error', error => console.error('Adapter error:', error));
 
 async function main() {
   await api.connect();
   await api.sendMessage({ body: 'Hello world' }, 'demo-thread');
   await api.disconnect();
 }
-
 main().catch(console.error);
 ```
 
-## API
+## Public API
+- `createClient({ adapter, rateLimit, logger })`
+- `client.connect(options?)`
+- `client.disconnect()`
+- `client.sendMessage({ body }, threadID[, callback])`
+- `client.getThreadInfo(threadID)`
+- `client.getUserInfo(userID)`
+- `BaseAdapter`, `MockAdapter`, and typed errors via `fca.errors`
 
-- `createClient({ adapter, rateLimit, logger })` — create a client.
-- `client.connect(options?)` — connect the selected adapter.
-- `client.disconnect()` — disconnect the adapter.
-- `client.sendMessage({ body }, threadID[, callback])` — send text through the adapter.
-- `client.getThreadInfo(threadID)` — retrieve thread metadata when supported.
-- `client.getUserInfo(userID)` — retrieve user metadata when supported.
+The client emits `connected`, `disconnected`, and `messageSent`. Connection failures are re-thrown as `AdapterError`; when an `error` listener is registered, the error is also emitted.
 
-The client emits `connected`, `disconnected`, and `messageSent`. Adapter errors are emitted as `error` and re-thrown to the caller. Attach an `error` listener when using EventEmitter error events.
+## Adapter contract
+Extend `BaseAdapter` or provide an object with `connect(options, client)`, `disconnect()`, and `sendMessage(message, threadID)`. Optional lookups are `getThreadInfo(threadID)` and `getUserInfo(userID)`.
 
-## Build an adapter
+Adapters own transport authorization, validation, retry policy, and compliance. Never commit tokens, cookies, passwords, or session files. Use environment variables or a secret manager.
 
-Extend `BaseAdapter` or provide an object implementing `connect`, `disconnect`, and `sendMessage`. Optional lookups are `getThreadInfo` and `getUserInfo`.
-
-Adapters are responsible for transport-specific authorization, request validation, retries, and platform policy compliance. Never commit access tokens, cookies, passwords, or session files. Keep secrets in environment variables or a secret manager.
+## Rate limiting
+The client applies a local sliding-window limiter. Configure `rateLimit: { max, windowMs }`; defaults are 30 calls per 60 seconds. This is a local guard, not a substitute for platform-side limits.
 
 ## Development
-
 ```bash
 npm test
 node examples/basic.js
 ```
+GitHub Actions runs tests on Node.js 20, 22, and 24 for pushes, pull requests, and manual runs.
 
-## Roadmap
-
+## Current status
 - [x] CommonJS package foundation
 - [x] Adapter contract and mock transport
 - [x] Event-based client core
 - [x] Input validation and local rate limiting
-- [x] Node.js built-in tests
-- [ ] Documented production adapter contract and conformance tests
-- [ ] Authorized transport integrations, subject to platform support and terms
+- [x] Lifecycle and callback unit tests
+- [x] Continuous integration workflow
+- [ ] Documented, authorized platform transport adapter
+- [ ] External adapter conformance suite
+- [ ] Release verification and npm publication
 
 ## License
-
 MIT. See [LICENSE](LICENSE).
