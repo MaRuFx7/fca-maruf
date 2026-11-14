@@ -23,7 +23,7 @@ test('legacy login forwards credentials, options, and callback to the transport'
   assert.equal(returned, 'transport-handle');
   assert.equal(received.creds, credentials);
   assert.equal(received.opts, options);
-  assert.equal(received.callback, callback);
+  assert.notEqual(received.callback, callback);
   assert.deepEqual(callbackResult, { error: null, result: api });
 });
 
@@ -57,4 +57,53 @@ test('legacy login reports a missing transport through callback', async () => {
 test('legacy login requires a callback', () => {
   const login = createLogin(() => () => {});
   assert.throws(() => login({ appState: [] }), /requires a callback/);
+});
+
+test('adds api.stopListening compatibility for transports returning a stop function', () => {
+  let stopped = 0;
+  const api = {
+    listenMqtt() {
+      return () => { stopped += 1; };
+    }
+  };
+  const login = createLogin(() => (credentials, options, callback) => {
+    callback(null, api);
+  });
+
+  let returnedApi;
+  login({ appState: [] }, (error, value) => {
+    assert.ifError(error);
+    returnedApi = value;
+  });
+
+  const stopHandle = returnedApi.listenMqtt(() => {});
+  assert.equal(typeof stopHandle, 'function');
+
+  let stopError = 'not-called';
+  returnedApi.stopListening(error => { stopError = error; });
+  assert.equal(stopped, 1);
+  assert.equal(stopError, null);
+});
+
+test('reports when stopListening is called without an active listener', () => {
+  const api = { listenMqtt() { return () => {}; } };
+  const login = createLogin(() => (credentials, options, callback) => callback(null, api));
+
+  login({ appState: [] }, (error, returnedApi) => {
+    assert.ifError(error);
+    returnedApi.stopListening(stopError => {
+      assert.match(stopError.message, /No active MQTT listener/);
+    });
+  });
+});
+
+test('does not replace a transport-provided stopListening method', () => {
+  const original = () => 'original';
+  const api = { listenMqtt() {}, stopListening: original };
+  const login = createLogin(() => (credentials, options, callback) => callback(null, api));
+
+  login({ appState: [] }, (error, returnedApi) => {
+    assert.ifError(error);
+    assert.equal(returnedApi.stopListening, original);
+  });
 });
