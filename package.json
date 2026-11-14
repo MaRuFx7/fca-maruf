@@ -1,12 +1,15 @@
 {
   "name": "fca-maruf",
   "version": "1.0.0",
-  "description": "A modular, adapter-based messaging client framework by MaRuF.",
+  "description": "MaRuF FCA compatibility package for legacy GoatBot-style Facebook Chat API clients.",
   "main": "index.js",
   "type": "commonjs",
   "engines": { "node": ">=20" },
   "scripts": { "test": "node --test", "test:watch": "node --test --watch" },
-  "keywords": ["messaging", "bot-framework", "adapter", "maruf"],
+  "keywords": ["facebook-chat-api", "fca", "goatbot", "maruf"],
   "license": "MIT",
+  "dependencies": {
+    "@eryxenx/fca": "^1.3.3"
+  },
   "files": ["index.js", "lib/", "adapters/", "README.md", "LICENSE"]
 }
